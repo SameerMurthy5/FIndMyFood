@@ -1,3 +1,4 @@
+import { signOut } from "@/lib/actions";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import React from "react";
@@ -14,6 +15,9 @@ const ProtectedPage = async () => {
     <div>
       Hello {data.user.email}
       <p> here is your id: {data.user.id}</p>
+      <button className="btn btn-primary" onClick={signOut}>
+        Sign Out
+      </button>
     </div>
   );
 };
