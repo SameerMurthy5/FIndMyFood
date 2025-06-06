@@ -8,7 +8,7 @@ const ProtectedPage = async () => {
   const { data, error } = await supabase.auth.getUser();
 
   if (error) {
-    redirect("/");
+    redirect("/"); // if there is an error, redirect to home
   }
 
   return (

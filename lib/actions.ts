@@ -30,6 +30,7 @@ const signinWithGoogle = signInWith('google')
 const signOut = async () => {
   const supabase = await createClient()
   await supabase.auth.signOut()
+  redirect('/') // redirect to home page after sign out
 }
 
 export { signinWithGoogle, signOut }
