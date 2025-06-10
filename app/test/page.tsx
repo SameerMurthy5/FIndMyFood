@@ -1,12 +1,17 @@
 import Maps from "@/components/Maps";
+import TestForm from "@/components/TestForm";
+import { MapProvider } from "@/contexts/MapContext";
 import React from "react";
 
 const page = () => {
   return (
-    <div className="mx-5 my-4">
-      Test Page
-      <Maps />
-    </div>
+    <MapProvider>
+      <div className="mx-5 my-4">
+        Test Page
+        <Maps />
+        <TestForm />
+      </div>
+    </MapProvider>
   );
 };
 

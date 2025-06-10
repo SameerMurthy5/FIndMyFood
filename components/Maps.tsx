@@ -1,26 +1,20 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Loader } from "@googlemaps/js-api-loader";
-
-function timeout(delay: number) {
-  return new Promise((res) => setTimeout(res, delay));
-}
+import loader from "@/lib/googleMaps/loader";
+import { LLMToRequest } from "@/lib/googleMaps/utils";
+import { useMap } from "@/contexts/MapContext";
 
 export default function Map() {
   const mapRef = useRef<HTMLDivElement>(null);
-  const [map, setMap] = useState<google.maps.Map | null>(null);
+  const { setMap, updateCenter, map, llmResponse, markers, setMarkers } =
+    useMap();
 
   useEffect(() => {
     const initializeMap = async () => {
-      const loader = new Loader({
-        apiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!,
-        version: "weekly",
-      });
-
       const { Map } = await loader.importLibrary("maps");
 
-      const center = new google.maps.LatLng(37.7749, -122.4194); // San Francisco
+      const center = new google.maps.LatLng(42.352312, -71.042877); // Boston (default)
 
       const mapInstance = new Map(mapRef.current!, {
         center,
@@ -36,44 +30,55 @@ export default function Map() {
 
   useEffect(() => {
     const searchNearbyRestaurants = async () => {
-      if (!map) return; // wait until map is ready
+      if (!map || !llmResponse) return; // wait until map is ready and LLM response is available
 
-      const loader = new Loader({
-        apiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "",
-        version: "weekly",
-      });
+      // Clear previous markers
+      if (markers && markers.length > 0) {
+        markers.forEach((marker) => {
+          marker.map = null; // this removes it from the map
+        });
+        setMarkers([]);
+      }
 
       const { AdvancedMarkerElement } = await loader.importLibrary("marker");
       const { Place } = await loader.importLibrary("places");
 
-      const center = map.getCenter();
+      const center = map.getCenter()!;
 
-      const request = {
-        fields: ["displayName", "location", "businessStatus"],
-        locationRestriction: {
-          center: center!,
-          radius: 1000,
-        },
-        includedPrimaryTypes: ["restaurant"],
-        language: "en-US",
-        region: "us",
+      const centerLatLng: google.maps.LatLngLiteral = {
+        lat: center.lat(),
+        lng: center.lng(),
       };
 
-      const { places } = await Place.searchNearby(request);
+      const requestfromLLM = await LLMToRequest(
+        llmResponse,
+        updateCenter,
+        centerLatLng
+      );
+
+      console.log("Request from LLM:", requestfromLLM);
+
+      const { places } = await Place.searchByText(requestfromLLM);
+      console.log("Places found:", places);
+
+      const newMarkers: google.maps.marker.AdvancedMarkerElement[] = [];
 
       places.forEach((place) => {
         if (place.location) {
-          new AdvancedMarkerElement({
+          const marker = new AdvancedMarkerElement({
             map,
             position: place.location,
             title: place.displayName,
           });
+          newMarkers.push(marker);
         }
       });
+
+      setMarkers(newMarkers);
     };
 
     searchNearbyRestaurants();
-  }, [map]);
+  }, [map, llmResponse]);
 
   return <div ref={mapRef} className="w-full h-[400px] rounded-lg shadow" />;
 }
