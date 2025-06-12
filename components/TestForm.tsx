@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useMap } from "@/contexts/MapContext";
 
 export default function TestForm() {
-  const { setLLMResponse } = useMap();
+  const { setResturants, updateCenter } = useMap();
   const [input, setInput] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -21,13 +21,8 @@ export default function TestForm() {
 
     const data = await response.json();
     console.log("Backend response:", data);
-
-    // setLLMResponse({
-    //   search_text: input,
-    //   location: "West Lafayette, IN",
-    //   use_current_location: false,
-    //   radius_meters: 1600,
-    // });
+    setResturants(data.output);
+    updateCenter(data.center);
   };
 
   return (

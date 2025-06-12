@@ -1,17 +1,20 @@
 "use client";
-// context/MapContext.tsx
 import { createContext, useContext, useState } from "react";
 
 type MapContextType = {
   map: google.maps.Map | null;
   setMap: (map: google.maps.Map) => void;
-  updateCenter: (center: google.maps.LatLngLiteral) => void;
+  center: google.maps.LatLngLiteral | null;
+  setCenter: (center: google.maps.LatLngLiteral | null) => void;
   llmResponse: LLMResponse | null;
   setLLMResponse: (response: LLMResponse | null) => void;
   markers: google.maps.marker.AdvancedMarkerElement[] | null;
   setMarkers: (
     markers: google.maps.marker.AdvancedMarkerElement[] | null
   ) => void;
+  resturants: any[] | null;
+  setResturants: (resturants: any[] | null) => void;
+  updateCenter: (center: google.maps.LatLngLiteral) => void;
 };
 
 type LLMResponse = {
@@ -29,8 +32,11 @@ export const MapProvider = ({ children }: { children: React.ReactNode }) => {
   const [markers, setMarkers] = useState<
     google.maps.marker.AdvancedMarkerElement[] | null
   >(null);
+  const [resturants, setResturants] = useState<any[] | null>(null);
+  const [center, setCenter] = useState<google.maps.LatLngLiteral | null>(null); // default Boston
 
   const updateCenter = (center: google.maps.LatLngLiteral) => {
+    setCenter(center);
     map?.setCenter(center);
     map?.setZoom(14);
   };
@@ -40,11 +46,15 @@ export const MapProvider = ({ children }: { children: React.ReactNode }) => {
       value={{
         map,
         setMap,
+        center,
         updateCenter,
+        setCenter,
         llmResponse,
         setLLMResponse,
         markers,
         setMarkers,
+        resturants,
+        setResturants,
       }}
     >
       {children}

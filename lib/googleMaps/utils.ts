@@ -2,7 +2,7 @@ import loader from "./loader";
 
 // function to get  bounds (LatLngBounds) from a center point and radius
 export async function getBoundsFromRadius(
-    center: google.maps.LatLngLiteral,
+    center: { lat: number; lng: number },
     radiusMeters: number
   ): Promise<google.maps.LatLngBounds> {
     const { spherical } = await loader.importLibrary("geometry");
