@@ -7,14 +7,27 @@ export default function TestForm() {
   const { setLLMResponse } = useMap();
   const [input, setInput] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLLMResponse({
-      search_text: input,
-      location: "Boston, MA",
-      use_current_location: false,
-      radius_meters: 1600,
+
+    // api route test
+    const response = await fetch("/api/search", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ query: input }),
     });
+
+    const data = await response.json();
+    console.log("Backend response:", data);
+
+    // setLLMResponse({
+    //   search_text: input,
+    //   location: "West Lafayette, IN",
+    //   use_current_location: false,
+    //   radius_meters: 1600,
+    // });
   };
 
   return (
