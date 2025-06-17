@@ -1,27 +1,40 @@
 import { Place } from '@/types/Place';
 import { LLMResponse } from '@/types/LLMResponse';
+import { buildQuery } from '@/lib/newGoogleMaps/queryBuilder';
+import { filterPlaces } from '@/lib/newGoogleMaps/filterPlaces';
 
-export async function searchbyTextGoogle(intent: LLMResponse): Promise<{places: Place[], center: { lat: number; lng: number }}> {
-    const {cuisine, vibe, location, use_current_location, radius_meters} = intent;
+export async function searchbyTextGoogle(intent: LLMResponse): Promise<{OGplaces: Place[], places: Place[], center: { lat: number; lng: number }}> {
+    // const {cuisine, vibe, location, use_current_location, radius_meters} = intent;
 
-    // Build textQuery based on intent fields
-    // TODO : replace this with AI
-    const queryParts = [];
-    if (vibe === "fancy") queryParts.push("fine dining");
-    if (cuisine) queryParts.push(cuisine);
-    queryParts.push("restaurant");
+    // // Build textQuery based on intent fields
+    // // TODO : replace this with AI
+    // const queryParts = [];
+    // if (vibe === "fancy") queryParts.push("fine dining");
+    // if (cuisine) queryParts.push(cuisine);
+    // queryParts.push("restaurant");
 
-    const textQuery = queryParts.join(" "); // or do "Italian resturant" for testing, must be textQuery field:
+    // const textQuery = queryParts.join(" "); 
 
-    const textQuery2 = "Italian restaurant";
+    // const textQuery2 = "Italian restaurant";
 
-    const center = await resolveLocationCenter(intent);
-    //console.log("Resolved center:", center);
+    // const center = await resolveLocationCenter(location);
+    // //console.log("Resolved center:", center);
+    // const bounds = computeBoundingBox(center, radius_meters);
+    // //console.log("Computed bounding box:", bounds);
+
+
+    const { radius_meters } = intent;
+
+    const BuiltQuery = buildQuery(intent);
+    console.log("Built query from intent:", BuiltQuery);
+    const { textQuery, resolvedLocation, filters } = BuiltQuery;
+
+    const center = await resolveLocationCenter(resolvedLocation);
     const bounds = computeBoundingBox(center, radius_meters);
-    //console.log("Computed bounding box:", bounds);
+
 
     const req_restricted = {
-        textQuery: textQuery2,
+        textQuery: textQuery,
         locationRestriction: {
             rectangle: {
               low: {
@@ -70,12 +83,14 @@ export async function searchbyTextGoogle(intent: LLMResponse): Promise<{places: 
         rating: p.rating
     }));
 
-    return {places, center};
+    const filteredPlaces = filterPlaces(places, filters);
+
+    return {OGplaces: places, center: center, places: filteredPlaces};
 }
 
-export async function resolveLocationCenter(intent: LLMResponse): Promise<{ lat: number; lng: number }> {
-    if (intent.location) {
-      const geocoded = await geocodeLocation(intent.location);
+export async function resolveLocationCenter(intentLoc: string ): Promise<{ lat: number; lng: number }> {
+    if (intentLoc) {
+      const geocoded = await geocodeLocation(intentLoc);
       return geocoded;
     } else {
       // Fallback default (boston)

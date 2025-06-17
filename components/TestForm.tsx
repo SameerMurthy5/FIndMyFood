@@ -21,7 +21,7 @@ export default function TestForm() {
 
     const data = await response.json();
     console.log("Backend response:", data);
-    setResturants(data.output);
+    setResturants(data.filteredoutput);
     updateCenter(data.center);
   };
 

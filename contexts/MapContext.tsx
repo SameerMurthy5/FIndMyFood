@@ -1,5 +1,6 @@
 "use client";
 import { createContext, useContext, useState } from "react";
+import { LLMResponse } from "@/types/LLMResponse";
 
 type MapContextType = {
   map: google.maps.Map | null;
@@ -15,13 +16,6 @@ type MapContextType = {
   resturants: any[] | null;
   setResturants: (resturants: any[] | null) => void;
   updateCenter: (center: google.maps.LatLngLiteral) => void;
-};
-
-type LLMResponse = {
-  search_text: string;
-  location?: string;
-  use_current_location: boolean;
-  radius_meters: number;
 };
 
 const MapContext = createContext<MapContextType | undefined>(undefined);
