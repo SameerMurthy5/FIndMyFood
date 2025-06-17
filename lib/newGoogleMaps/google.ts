@@ -3,33 +3,15 @@ import { LLMResponse } from '@/types/LLMResponse';
 import { buildQuery } from '@/lib/newGoogleMaps/queryBuilder';
 import { filterPlaces } from '@/lib/newGoogleMaps/filterPlaces';
 
-export async function searchbyTextGoogle(intent: LLMResponse): Promise<{OGplaces: Place[], places: Place[], center: { lat: number; lng: number }}> {
-    // const {cuisine, vibe, location, use_current_location, radius_meters} = intent;
 
-    // // Build textQuery based on intent fields
-    // // TODO : replace this with AI
-    // const queryParts = [];
-    // if (vibe === "fancy") queryParts.push("fine dining");
-    // if (cuisine) queryParts.push(cuisine);
-    // queryParts.push("restaurant");
-
-    // const textQuery = queryParts.join(" "); 
-
-    // const textQuery2 = "Italian restaurant";
-
-    // const center = await resolveLocationCenter(location);
-    // //console.log("Resolved center:", center);
-    // const bounds = computeBoundingBox(center, radius_meters);
-    // //console.log("Computed bounding box:", bounds);
-
-
-    const { radius_meters } = intent;
+export async function searchbyTextGoogle(intent: LLMResponse, currentLocation: any): Promise<{OGplaces: Place[], places: Place[], center: { lat: number; lng: number }}> {
+    const { radius_meters, use_current_location } = intent;
 
     const BuiltQuery = buildQuery(intent);
     console.log("Built query from intent:", BuiltQuery);
     const { textQuery, resolvedLocation, filters } = BuiltQuery;
 
-    const center = await resolveLocationCenter(resolvedLocation);
+    const center = await resolveLocationCenter(resolvedLocation, use_current_location, currentLocation);
     const bounds = computeBoundingBox(center, radius_meters);
 
 
@@ -88,14 +70,22 @@ export async function searchbyTextGoogle(intent: LLMResponse): Promise<{OGplaces
     return {OGplaces: places, center: center, places: filteredPlaces};
 }
 
-export async function resolveLocationCenter(intentLoc: string ): Promise<{ lat: number; lng: number }> {
-    if (intentLoc) {
-      const geocoded = await geocodeLocation(intentLoc);
-      return geocoded;
-    } else {
-      // Fallback default (boston)
-      return { lat: 42.3601, lng: -71.0589 };
-    }
+export async function resolveLocationCenter(
+  intentLoc: string | undefined,
+  useCurrentLocation: boolean,
+  currentLocation: any
+): Promise<{ lat: number; lng: number }> {
+
+  const fallbackCenter = { lat: 42.3601, lng: -71.0589 }; // Boston fallback
+  if (useCurrentLocation && currentLocation) {
+    return currentLocation
+  }
+
+  if (intentLoc) {
+    return await geocodeLocation(intentLoc).catch(() => fallbackCenter);
+  }
+
+  return fallbackCenter;
 }
 
 async function geocodeLocation(locationText: string): Promise<{ lat: number; lng: number }> {

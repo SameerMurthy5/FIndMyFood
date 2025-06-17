@@ -3,17 +3,18 @@ import { searchbyTextGoogle } from "@/lib/newGoogleMaps/google";
 import { LLMResponse } from '@/types/LLMResponse';
 
 export async function POST(req: NextRequest) {
-    const { query } = await req.json();
+    const { query, curLoc } = await req.json();
+    console.log("current location:", curLoc);
 
     const structuredIntent: LLMResponse = { // returned by LLM 
         cuisine: "italian",
-        vibe: "casual",
+        vibe: "",
         location: "West Lafayette, IN",
         use_current_location: false,
         open_now: false,
         radius_meters: 10000,
     };
 
-    const {OGplaces, places, center} = await searchbyTextGoogle(structuredIntent);
+    const {OGplaces, places, center} = await searchbyTextGoogle(structuredIntent, curLoc);
     return NextResponse.json({message: query, parsed: structuredIntent, filteredoutput: places, OGplaces: OGplaces, center: center});
 }

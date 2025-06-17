@@ -21,26 +21,30 @@ export function buildQuery(intent: LLMResponse): BuiltQuery {
     // Vibe-specific mappings
     switch (vibe) {
         case "fancy":
-        queryParts.push("fine dining");
-        filters.minPriceLevel = 3;
-        filters.minRating = 4.0;
+            queryParts.push("fine dining");
+            filters.minPriceLevel = 3;
+            filters.minRating = 4.0;
         break;
         case "casual":
-        queryParts.push("casual dining");
-        filters.maxPriceLevel = 2;
+            queryParts.push("casual dining");
+            filters.maxPriceLevel = 2;
         break;
         case "romantic":
-        queryParts.push("romantic");
-        filters.excludeTypes = ["bar", "night_club"];
+            queryParts.push("romantic");
+            filters.excludeTypes = ["bar", "night_club"];
         break;
         case "family":
-        queryParts.push("family friendly");
-        filters.excludeTypes = ["bar"];
+            queryParts.push("family friendly");
+            filters.excludeTypes = ["bar"];
         break;
         case "fast_food":
-        queryParts.push("fast food");
-        filters.includeTypes = ["restaurant", "meal_takeaway"];
-        filters.maxPriceLevel = 1;
+            queryParts.push("fast food");
+            filters.includeTypes = ["restaurant", "meal_takeaway"];
+            filters.maxPriceLevel = 1;
+        default:
+            // warning
+            console.warn("unhandled vibe:", vibe);  
+            // write to a log file          
         break;
     }
 
