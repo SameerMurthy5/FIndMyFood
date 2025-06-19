@@ -7,14 +7,17 @@ import { filterPlaces } from '@/lib/newGoogleMaps/filterPlaces';
 export async function searchbyTextGoogle(intent: LLMResponse, currentLocation: any): Promise<{OGplaces: Place[], places: Place[], center: { lat: number; lng: number }}> {
     const { radius_meters, use_current_location } = intent;
 
+    // build textQuery from LLMResponse
     const BuiltQuery = buildQuery(intent);
     console.log("Built query from intent:", BuiltQuery);
     const { textQuery, resolvedLocation, filters } = BuiltQuery;
 
+    // Geolocate position using browser or google api
     const center = await resolveLocationCenter(resolvedLocation, use_current_location, currentLocation);
     const bounds = computeBoundingBox(center, radius_meters);
 
 
+    // buid request
     const req_restricted = {
         textQuery: textQuery,
         locationRestriction: {
@@ -32,8 +35,6 @@ export async function searchbyTextGoogle(intent: LLMResponse, currentLocation: a
     }
 
     console.log("Request body for Google Places API:", req_restricted);
-
-    //console.log("Request body for Google Places API:", requestBody);
 
     const res = await fetch(
         `https://places.googleapis.com/v1/places:searchText`,
@@ -65,6 +66,7 @@ export async function searchbyTextGoogle(intent: LLMResponse, currentLocation: a
         rating: p.rating
     }));
 
+    // filter out irrelevent locations
     const filteredPlaces = filterPlaces(places, filters);
 
     return {OGplaces: places, center: center, places: filteredPlaces};

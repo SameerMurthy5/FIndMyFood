@@ -33,7 +33,7 @@ export function buildQuery(intent: LLMResponse): BuiltQuery {
             queryParts.push("romantic");
             filters.excludeTypes = ["bar", "night_club"];
         break;
-        case "family":
+        case "family-friendly":
             queryParts.push("family friendly");
             filters.excludeTypes = ["bar"];
         break;
