@@ -64,8 +64,8 @@ export default function TestForm() {
         type="text"
         value={input}
         onChange={(e) => setInput(e.target.value)}
-        placeholder="Try 'indian food'"
-        className="border px-2 py-1 mr-2"
+        placeholder="Try 'indian food near me'"
+        className="border px-2 py-1 mr-2 w-80 text-center"
       />
       <button
         type="submit"
