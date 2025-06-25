@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { searchbyTextGoogle } from "@/lib/newGoogleMaps/google";
-import { LLMResponse } from '@/types/LLMResponse';
 import { parseQueryWithLLM } from "@/lib/newGoogleMaps/llm";
 
 export async function POST(req: NextRequest) {

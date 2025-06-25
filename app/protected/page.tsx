@@ -13,11 +13,16 @@ const ProtectedPage = async () => {
 
   return (
     <div>
-      Hello {data.user.email}
-      <p> here is your id: {data.user.id}</p>
-      <button className="btn btn-primary" onClick={signOut}>
-        Sign Out
-      </button>
+      <div>
+        Hello {data.user.email}
+        <p> here is your id: {data.user.id}</p>
+        <button className="btn btn-primary" onClick={signOut}>
+          Sign Out
+        </button>
+      </div>
+      <div>
+        <a href="/test">Go to test page</a>
+      </div>
     </div>
   );
 };

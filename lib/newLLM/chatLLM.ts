@@ -3,6 +3,7 @@ import { OpenAI } from "openai";
 import { zodTextFormat } from "openai/helpers/zod";
 import { z } from "zod";
 import { LLMResponse } from "@/types/LLMResponse";
+import { ChatMessage } from "@/types/chatMessage";
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -29,16 +30,18 @@ export const LLMResponseSchema = z.object({
     radius_meters: z.number().default(5000), // default to 5km
 });
 
-export async function parseQueryWithLLM(userPrompt: string): Promise<LLMResponse> {
+export async function parseQueryWithLLM(userPrompt: string, context: ChatMessage[]): Promise<LLMResponse> {
     const response = await openai.responses.parse({
       model: "gpt-4.1-nano",
       input: [
         {
           role: "system",
           content:
-            `You are a restaurant search assistant that translates natural language queries into structured filters for a map-based restaurant search app.
+            `You are a restaurant search assistant that translates natural language queries into structured filters for a map-based restaurant search app. 
 
             The goal is to extract fields such as cuisine, vibe, location, whether to use the user's current location, whether restaurants should be open now, and an appropriate search radius in meters.
+
+            Previous chat history with the user will also be provided as context to help understand follow-up queries.
 
             Follow these rules carefully:
 
@@ -59,7 +62,9 @@ export async function parseQueryWithLLM(userPrompt: string): Promise<LLMResponse
 
             6. Include a vibe field (e.g., romantic, casual, fast_food) only if clearly implied. Use one of the allowed values: ["romantic", "casual", "family-friendly", "fancy", "fast_food"].
             
-            7. If the user expresses a budget preference (e.g., cheap, fancy, expensive), include a budget field. Allowed values: "cheap", "moderate", "expensive".`
+            7. If the user expresses a budget preference (e.g., cheap, fancy, expensive), include a budget field. Allowed values: "cheap", "moderate", "expensive".
+
+            8. If the user provides a follow-up, assume context from previous message unless overridden. modify fields of query that were asked to be change by the user`
         },
         {
           role: "user",

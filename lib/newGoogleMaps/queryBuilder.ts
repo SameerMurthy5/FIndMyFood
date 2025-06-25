@@ -27,11 +27,11 @@ export function buildQuery(intent: LLMResponse): BuiltQuery {
         break;
         case "casual":
             queryParts.push("casual dining");
-            filters.maxPriceLevel = 2;
+            //filters.maxPriceLevel = 2;
         break;
         case "romantic":
             queryParts.push("romantic");
-            filters.excludeTypes = ["bar", "night_club"];
+            filters.excludeTypes = ["night_club"];
         break;
         case "family-friendly":
             queryParts.push("family friendly");

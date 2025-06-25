@@ -4,7 +4,15 @@ import { useState, useEffect, useRef } from "react";
 import loader from "@/lib/googleMaps/loader";
 import { useMap } from "@/contexts/MapContext";
 
-export default function Map() {
+interface MapProps {
+  heightClass?: string;
+  widthClass?: string;
+}
+
+export default function Map({
+  heightClass = "h-[800px]",
+  widthClass = "w-full",
+}: MapProps) {
   const mapRef = useRef<HTMLDivElement>(null);
   const {
     setMap,
@@ -74,5 +82,10 @@ export default function Map() {
     renderMarkers();
   }, [map, resturants]);
 
-  return <div ref={mapRef} className="w-full h-[400px] rounded-lg shadow" />;
+  return (
+    <div
+      ref={mapRef}
+      className={`${widthClass} ${heightClass} rounded-lg shadow`}
+    />
+  );
 }
