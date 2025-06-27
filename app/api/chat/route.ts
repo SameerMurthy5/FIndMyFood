@@ -2,11 +2,10 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server"; 
-import { parseQueryWithLLM } from "@/lib/newLLM/chatLLM"; // function to process the user's message
-import { getMessages, addMessage, clearMessages, getContext } from "@/lib/redis/functions";
+import { parseQueryWithLLM } from "@/lib/newLLM/chatLLM";
+import { getMessages, addMessage, setLastAIResponse, getLastAIResponse } from "@/lib/redis/functions";
 import { ChatMessage } from "@/types/chatMessage";
 import { searchbyTextGoogle } from "@/lib/newGoogleMaps/google";
-import { redisClient } from "@/lib/redis/client";
 
 
 export async function POST(req: NextRequest) {
@@ -29,13 +28,15 @@ export async function POST(req: NextRequest) {
     const userChatMessage: ChatMessage = { role: "user", content: query };
     // Push the user message
     await addMessage(userId, userChatMessage);
+
+    // get the last AI response from Redis
+    const lastAIResponse = await getLastAIResponse(userId);
     
-   
+    console.log("context AI Response:", lastAIResponse);
     // Run the LLM logic
-    const context = await getContext(userId);
-    const aiResponse = await parseQueryWithLLM(query, context);
-    await redisClient.set(`chat:${userId}:lastAIResponse`, aiResponse); // store the last AI response separately
-    console.log("AI response:", aiResponse);
+    const aiResponse = await parseQueryWithLLM(query, lastAIResponse);
+    setLastAIResponse(userId, aiResponse) // store the last AI response separately
+    console.log("new AI response:", aiResponse);
     
     const assistantChatMessage: ChatMessage = { role: "assistant", content: aiResponse };
 
