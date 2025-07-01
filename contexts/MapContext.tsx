@@ -1,6 +1,7 @@
 "use client";
 import { createContext, useContext, useState } from "react";
 import { LLMResponse } from "@/types/LLMResponse";
+import { ChatMessage } from "@/types/chatMessage";
 
 type MapContextType = {
   map: google.maps.Map | null;
@@ -16,6 +17,8 @@ type MapContextType = {
   resturants: any[] | null;
   setResturants: (resturants: any[] | null) => void;
   updateCenter: (center: google.maps.LatLngLiteral) => void;
+  Messages: ChatMessage[];
+  setMessages: (Messages: ChatMessage[]) => void;
 };
 
 const MapContext = createContext<MapContextType | undefined>(undefined);
@@ -27,13 +30,15 @@ export const MapProvider = ({ children }: { children: React.ReactNode }) => {
     google.maps.marker.AdvancedMarkerElement[] | null
   >(null);
   const [resturants, setResturants] = useState<any[] | null>(null);
-  const [center, setCenter] = useState<google.maps.LatLngLiteral | null>(null); // default Boston
+  const [center, setCenter] = useState<google.maps.LatLngLiteral | null>(null);
 
   const updateCenter = (center: google.maps.LatLngLiteral) => {
     setCenter(center);
     map?.setCenter(center);
     map?.setZoom(14);
   };
+
+  const [Messages, setMessages] = useState<ChatMessage[]>([]);
 
   return (
     <MapContext.Provider
@@ -49,6 +54,8 @@ export const MapProvider = ({ children }: { children: React.ReactNode }) => {
         setMarkers,
         resturants,
         setResturants,
+        Messages,
+        setMessages,
       }}
     >
       {children}

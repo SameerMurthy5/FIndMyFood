@@ -3,7 +3,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server"; 
 import { parseQueryWithLLM } from "@/lib/newLLM/chatLLM";
-import { getMessages, addMessage, setLastAIResponse, getLastAIResponse } from "@/lib/redis/functions";
+import { getMessages, addMessage, setLastAIResponse, getLastAIResponse, clearMessages, clearLastAIResponse } from "@/lib/redis/functions";
 import { ChatMessage } from "@/types/chatMessage";
 import { searchbyTextGoogle } from "@/lib/newGoogleMaps/google";
 
@@ -57,4 +57,47 @@ export async function POST(req: NextRequest) {
     console.error("Chat API error:", err);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
+}
+
+export async function GET(req: NextRequest) {
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase.auth.getUser();
+
+    if (error) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const userId = data.user.id;
+    const messages = await getMessages(userId);
+
+    console.log("Retrieved messages:", messages);
+    return NextResponse.json({msg: messages});
+  } catch (err) {
+    console.error("Error retrieving messages:", err);
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+  }
+}
+
+
+export async function DELETE(req: NextRequest) {
+    const supabase = await createClient();
+    const { data, error } = await supabase.auth.getUser();
+
+    if (error || !data.user) {
+        return new Response("Unauthorized", { status: 401 });
+    }
+
+    const userId = data.user.id;
+
+    console.log("before: ", await getMessages(userId));
+    console.log("before aiclear", await getLastAIResponse(userId))
+
+    await clearMessages(userId);
+    // clear the last AI response as well
+    await clearLastAIResponse(userId);
+
+    console.log("after aiclear", await getLastAIResponse(userId))
+    console.log("after: ", await getMessages(userId));
+    return NextResponse.json({ message: "Messages cleared" }, { status: 200 });
 }

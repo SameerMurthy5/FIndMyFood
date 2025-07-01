@@ -1,13 +1,12 @@
 "use client";
 import MapAndChat from "@/components/MapAndChat";
-import TestFormChat from "@/components/TestFormChat";
 import { MapProvider } from "@/contexts/MapContext";
 import { signOut } from "@/lib/actions";
 
 import React from "react";
 
 async function handleClearMessages() {
-  const res = await fetch("/api/clear", {
+  const res = await fetch("/api/chat", {
     method: "DELETE",
   });
 

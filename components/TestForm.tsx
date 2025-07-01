@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useMap } from "@/contexts/MapContext";
 
 export default function TestForm() {
-  const { setResturants, updateCenter } = useMap();
+  const { setResturants, updateCenter, setMessages, Messages } = useMap();
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -49,6 +49,7 @@ export default function TestForm() {
       const data = await response.json();
 
       setResturants(data.filteredoutput);
+
       updateCenter(data.center);
     } catch (err) {
       setError("Search failed. Try again.");
@@ -96,7 +97,7 @@ export default function TestForm() {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder="Try 'indian food near me'"
-          className="px-2 py-1 mr-2 w-80 text-center rounded"
+          className="px-2 py-1 mr-2 w-80 text-center rounded outline"
         />
         <button
           type="submit"
