@@ -13,7 +13,7 @@ export type BuiltQuery = {
 };
 
 export function buildQuery(intent: LLMResponse): BuiltQuery {
-    const { cuisine, vibe, location = "", radius_meters } = intent;
+    const { cuisine, vibe, location = "" } = intent;
 
     const queryParts: string[] = [];
     const filters: BuiltQuery["filters"] = {};

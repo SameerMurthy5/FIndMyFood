@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 import loader from "@/lib/googleMaps/loader";
 import { useMap } from "@/contexts/MapContext";
 
@@ -14,17 +14,7 @@ export default function Map({
   widthClass = "w-full",
 }: MapProps) {
   const mapRef = useRef<HTMLDivElement>(null);
-  const {
-    setMap,
-    center,
-    setCenter,
-    map,
-    llmResponse,
-    markers,
-    setMarkers,
-    resturants,
-    setResturants,
-  } = useMap();
+  const { setMap, map, markers, setMarkers, resturants } = useMap();
 
   useEffect(() => {
     const initializeMap = async () => {

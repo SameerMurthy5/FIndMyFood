@@ -27,17 +27,13 @@ export async function POST(req: NextRequest) {
 
   const userId = data.user.id;
 
-  const { success, reset, remaining } = await ratelimit.limit(userId);
+  const { success, reset } = await ratelimit.limit(userId);
   if (!success) {
     return NextResponse.json(
       { error: `Rate limit exceeded. Try again in ${reset} seconds.` },
       { status: 429 }
     );
   }
-
-
-
-
 
   try {
     const { query, curLoc} = await req.json();
@@ -82,7 +78,7 @@ export async function POST(req: NextRequest) {
   }
 }
 
-export async function GET(req: NextRequest) {
+export async function GET() {
   try {
     const supabase = await createClient();
     const { data, error } = await supabase.auth.getUser();
@@ -103,7 +99,7 @@ export async function GET(req: NextRequest) {
 }
 
 
-export async function DELETE(req: NextRequest) {
+export async function DELETE() {
     const supabase = await createClient();
     const { data, error } = await supabase.auth.getUser();
 

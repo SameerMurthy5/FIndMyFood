@@ -1,7 +1,7 @@
 "use client";
 import ClearMessagesButton from "@/components/ClearMessagesButton";
 import MapAndChat from "@/components/MapAndChat";
-import { MapProvider, useMap } from "@/contexts/MapContext";
+import { MapProvider } from "@/contexts/MapContext";
 import { signOut } from "@/lib/actions";
 
 import React from "react";

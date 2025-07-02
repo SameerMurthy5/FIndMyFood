@@ -8,7 +8,7 @@ export default function ChatBox() {
   const { Messages, setMessages } = useMap();
   useEffect(() => {
     const fetchData = async () => {
-      const res = await fetch("/api/chat", {
+      await fetch("/api/chat", {
         method: "DELETE",
       });
       setMessages([]);

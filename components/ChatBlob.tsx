@@ -8,7 +8,6 @@ type Props = {
 
 export default function ChatBlob({ text, sender }: Props) {
   const isUser = sender === "user";
-  const isText = text && typeof text === "string";
   const isThinking = text === "thinking";
   return (
     <div

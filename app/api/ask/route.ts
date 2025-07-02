@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
 
     const userId = data.user.id;
 
-    const { success, reset, remaining } = await ratelimit.limit(userId);
+    const { success, reset } = await ratelimit.limit(userId);
         if (!success) {
         return NextResponse.json(
             { error: `Rate limit exceeded. Try again in ${reset} seconds.` },

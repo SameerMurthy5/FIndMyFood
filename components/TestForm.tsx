@@ -64,7 +64,7 @@ export default function TestForm() {
       const messages = await fetch("/api/chat", { method: "GET" });
       const messagesData = await messages.json();
       setMessages(messagesData.msg);
-    } catch (err) {
+    } catch {
       alert("Search failed. Try again.");
     } finally {
       setLoading(false);
@@ -98,7 +98,7 @@ export default function TestForm() {
       const messages = await fetch("/api/chat", { method: "GET" });
       const messagesData = await messages.json();
       setMessages(messagesData.msg);
-    } catch (err) {
+    } catch {
       setError("Could not get an answer. Try again.");
     } finally {
       setLoading(false);
