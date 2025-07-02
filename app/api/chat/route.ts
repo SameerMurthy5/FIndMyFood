@@ -3,12 +3,42 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server"; 
 import { parseQueryWithLLM } from "@/lib/newLLM/chatLLM";
-import { getMessages, addMessage, setLastAIResponse, getLastAIResponse, clearMessages, clearLastAIResponse } from "@/lib/redis/functions";
+import { getMessages, addMessage, setLastAIResponse, getLastAIResponse, clearMessages, clearLastAIResponse, clearContext } from "@/lib/redis/functions";
 import { ChatMessage } from "@/types/chatMessage";
 import { searchbyTextGoogle } from "@/lib/newGoogleMaps/google";
+import { Ratelimit } from "@upstash/ratelimit";
+import { redisClient } from "@/lib/redis/client";
+
+// Allow 5 requests every 60 seconds per user
+const ratelimit = new Ratelimit({
+  redis: redisClient,
+  limiter: Ratelimit.fixedWindow(5, "60s"),
+});
 
 
 export async function POST(req: NextRequest) {
+
+  const supabase = await createClient();
+  const { data, error } = await supabase.auth.getUser();
+
+  if ( error ) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const userId = data.user.id;
+
+  const { success, reset, remaining } = await ratelimit.limit(userId);
+  if (!success) {
+    return NextResponse.json(
+      { error: `Rate limit exceeded. Try again in ${reset} seconds.` },
+      { status: 429 }
+    );
+  }
+
+
+
+
+
   try {
     const { query, curLoc} = await req.json();
     console.log("Chat query:", query, "Current location:", curLoc);
@@ -16,14 +46,7 @@ export async function POST(req: NextRequest) {
     if (!query || query.trim().length === 0) {
         return NextResponse.json({ error: "Query is required" }, { status: 400 });
     } 
-    const supabase = await createClient();
-    const { data, error } = await supabase.auth.getUser();
-
-    if ( error ) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const userId = data.user.id;
+    
 
     const userChatMessage: ChatMessage = { role: "user", content: query };
     // Push the user message
@@ -32,11 +55,11 @@ export async function POST(req: NextRequest) {
     // get the last AI response from Redis
     const lastAIResponse = await getLastAIResponse(userId);
     
-    console.log("context AI Response:", lastAIResponse);
+    //console.log("context AI Response:", lastAIResponse);
     // Run the LLM logic
     const aiResponse = await parseQueryWithLLM(query, lastAIResponse);
     setLastAIResponse(userId, aiResponse) // store the last AI response separately
-    console.log("new AI response:", aiResponse);
+    //console.log("new AI response:", aiResponse);
     
     const assistantChatMessage: ChatMessage = { role: "assistant", content: aiResponse };
 
@@ -45,8 +68,8 @@ export async function POST(req: NextRequest) {
 
 
     //check if added correctly
-    const messages = await getMessages(userId);
-    console.log("Session messages:", messages);
+    // const messages = await getMessages(userId);
+    //console.log("Session messages:", messages);
 
     // perform search
     const {OGplaces, places, center} = await searchbyTextGoogle(aiResponse, curLoc);
@@ -71,7 +94,7 @@ export async function GET(req: NextRequest) {
     const userId = data.user.id;
     const messages = await getMessages(userId);
 
-    console.log("Retrieved messages:", messages);
+    //console.log("Retrieved messages:", messages);
     return NextResponse.json({msg: messages});
   } catch (err) {
     console.error("Error retrieving messages:", err);
@@ -94,6 +117,7 @@ export async function DELETE(req: NextRequest) {
     console.log("before aiclear", await getLastAIResponse(userId))
 
     await clearMessages(userId);
+    clearContext(userId); 
     // clear the last AI response as well
     await clearLastAIResponse(userId);
 

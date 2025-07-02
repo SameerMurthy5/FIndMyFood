@@ -21,7 +21,10 @@ const ProtectedPage = async () => {
         </button>
       </div>
       <div>
-        <a href="/test">Go to test page</a>
+        <a href="/chat">chat with ai</a>
+      </div>
+      <div>
+        <a href="/protected/dashboard">Go to dashboard</a>
       </div>
     </div>
   );

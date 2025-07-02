@@ -8,5 +8,6 @@ export interface Place  {
     types?: string[];
     priceLevel?: number;
     rating?: number;
+    address?: string;
 }
   

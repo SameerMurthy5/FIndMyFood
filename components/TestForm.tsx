@@ -2,9 +2,11 @@
 
 import { useState } from "react";
 import { useMap } from "@/contexts/MapContext";
+import { ChatMessage } from "@/types/chatMessage";
 
 export default function TestForm() {
-  const { setResturants, updateCenter, setMessages, Messages } = useMap();
+  const { setResturants, updateCenter, setMessages, Messages, resturants } =
+    useMap();
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -38,6 +40,14 @@ export default function TestForm() {
     setError("");
     const currentLocation = await getCurrentLocation();
 
+    // Show user input + "thinking" placeholder
+    const userMsg: ChatMessage = { role: "user", content: input };
+    const aiPlaceholder: ChatMessage = {
+      role: "assistant",
+      content: "Thinking...",
+    };
+    setMessages([...Messages, userMsg, aiPlaceholder]);
+
     try {
       const response = await fetch("/api/chat", {
         method: "POST",
@@ -49,10 +59,13 @@ export default function TestForm() {
       const data = await response.json();
 
       setResturants(data.filteredoutput);
-
       updateCenter(data.center);
+
+      const messages = await fetch("/api/chat", { method: "GET" });
+      const messagesData = await messages.json();
+      setMessages(messagesData.msg);
     } catch (err) {
-      setError("Search failed. Try again.");
+      alert("Search failed. Try again.");
     } finally {
       setLoading(false);
     }
@@ -62,20 +75,29 @@ export default function TestForm() {
   const handleAsk = async () => {
     setLoading(true);
     setError("");
-    const currentLocation = await getCurrentLocation();
+
+    const userMsg: ChatMessage = { role: "user", content: input };
+    const aiPlaceholder: ChatMessage = {
+      role: "assistant",
+      content: "Thinking...",
+    };
+    setMessages([...Messages, userMsg, aiPlaceholder]);
 
     try {
       const response = await fetch("/api/ask", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt: input, curLoc: currentLocation }),
+        body: JSON.stringify({ query: input, restaurants: resturants }),
       });
 
       if (!response.ok) throw new Error("Ask failed");
       const data = await response.json();
 
-      console.log("Answer:", data.answer);
-      alert(data.answer);
+      console.log("Answer:", data.message);
+
+      const messages = await fetch("/api/chat", { method: "GET" });
+      const messagesData = await messages.json();
+      setMessages(messagesData.msg);
     } catch (err) {
       setError("Could not get an answer. Try again.");
     } finally {
@@ -88,6 +110,7 @@ export default function TestForm() {
       onSubmit={(e) => {
         e.preventDefault();
         handleSearch();
+        setInput("");
       }}
       className="mb-4"
     >

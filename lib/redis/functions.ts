@@ -20,17 +20,6 @@ export async function clearMessages(userId: string) {
     await redisClient.del(`chat:${userId}`);
 }
 
-
-export async function getContext(userId: string) {
-    const len = await redisClient.llen(`chat:${userId}`);
-    if (len < 0) {
-        return await redisClient.lrange<ChatMessage>(`chat:${userId}`, 0, -1);
-    }
-    else {
-        return await redisClient.lrange<ChatMessage>(`chat:${userId}`, -5, -1);
-    }
-}
-
 export async function setLastAIResponse(userId: string, response: LLMResponse) {
     await redisClient.set(`chat:${userId}:lastAIResponse`, response);
 }
@@ -48,4 +37,27 @@ export async function getLastAIResponse(userId: string): Promise<LLMResponse | n
 
 export async function clearLastAIResponse(userId: string) {
     await redisClient.del(`chat:${userId}:lastAIResponse`);
+}
+
+export async function getContextQuestions(userId: string): Promise<ChatMessage[]> {
+    const len = await redisClient.llen(`context:${userId}`);
+    if (len < 6) {
+        return await redisClient.lrange<ChatMessage>(`context:${userId}`, 0, -1);
+    }
+    else {
+        return await redisClient.lrange<ChatMessage>(`context:${userId}`, -6, -1);
+    }
+}
+
+export async function addToContext(userId: string, message: ChatMessage) {
+    const key = `context:${userId}`;
+    const len = await redisClient.llen(key);
+    if (len >= 6) {
+        await redisClient.lpop(key);
+    }
+    await redisClient.rpush(key, message);
+}
+
+export async function clearContext(userId: string) {
+    await redisClient.del(`context:${userId}`);
 }

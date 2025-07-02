@@ -43,7 +43,7 @@ export async function searchbyTextGoogle(intent: LLMResponse, currentLocation: a
           headers: { 
             "Content-Type": "application/json",
             "X-Goog-Api-Key": process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!,
-            "X-Goog-FieldMask": "places.displayName,places.location,places.businessStatus,places.types,places.priceLevel,places.rating"
+            "X-Goog-FieldMask": "places.formattedAddress,places.displayName,places.location,places.businessStatus,places.types,places.priceLevel,places.rating"
 
         },
           body: JSON.stringify(req_restricted),
@@ -51,7 +51,7 @@ export async function searchbyTextGoogle(intent: LLMResponse, currentLocation: a
     );
 
     const data = await res.json();
-    //console.log("Response from Google Places API: " + data.error_message + data.status);
+    //console.log("Response from Google Places API: ", data);
 
 
     const places: Place[] = (data.places || []).map((p: any) => ({
@@ -63,7 +63,8 @@ export async function searchbyTextGoogle(intent: LLMResponse, currentLocation: a
         businessStatus: p.businessStatus,
         types: p.types || [],
         priceLevel: p.priceLevel,
-        rating: p.rating
+        rating: p.rating,
+        address: p.formattedAddress || ""
     }));
 
     // filter out irrelevent locations
